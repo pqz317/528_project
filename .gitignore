@@ -1,0 +1,10 @@
+# Distribution / packaging
+*.egg-info/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# any intermediate data locally
+data/
+
+.DS_Stores
