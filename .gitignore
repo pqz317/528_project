@@ -7,4 +7,4 @@ __pycache__/
 # any intermediate data locally
 data/
 
-.DS_Stores
+.DS_Store
