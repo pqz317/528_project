@@ -9,14 +9,17 @@ class RWModel:
         alpha: setting for alpha learning rate
         num_trials: number of trials to be expected in the session
         num_stimuli: number of stimuli considered. 
-
+        init_values: np array of num_stimuli length, which values to start, 0 if None
+s
     Attributes:
         values: np array of num_trials + 1 x num_stimuli, value of each stimuli 
             at each trial. 
     """
-    def __init__(self, alpha, num_trials, num_stimuli=3):
+    def __init__(self, alpha, num_trials, num_stimuli=3, init_values=None):
         self.alpha = alpha
         self.values = np.zeros((num_trials + 1, num_stimuli))
+        if init_values:
+            self.values[0, :] = init_values
         self.rpes = np.zeros((num_trials + 1, num_stimuli))
         self.trial_idx = 0
 
@@ -42,12 +45,12 @@ class RWModel:
         self.trial_idx +=1
 
 
-def calc_values_for_rw_model(alpha, stimuli_idxs, rewards, num_stimuli=3):
+def calc_values_for_rw_model(alpha, stimuli_idxs, rewards, num_stimuli=3, init_vals=None):
     """
     Helper function to create a TD Model with updated values-per-trial, from a series of 
     stimuli and rewards
     """
-    td_model = RWModel(alpha, len(stimuli_idxs), num_stimuli)
+    td_model = RWModel(alpha, len(stimuli_idxs), num_stimuli, init_vals)
     for stimulus_idx, reward in zip(stimuli_idxs, rewards):
         td_model.update(stimulus_idx, reward)
     return td_model

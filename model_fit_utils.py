@@ -4,51 +4,51 @@ from models.rw_model import calc_values_for_rw_model
 from models.td_model import calc_values_for_td_model
 
 
-def calc_rw_value_mse(alpha, stimuli_idxs, rewards, behavior):
+def calc_rw_value_mse(alpha, stimuli_idxs, rewards, behavior, init_vals):
     """
     Calculates the mean squared error of rw model value to behavioral response
     """
-    model = calc_values_for_rw_model(alpha=alpha, stimuli_idxs=stimuli_idxs, rewards=rewards)
+    model = calc_values_for_rw_model(alpha=alpha, stimuli_idxs=stimuli_idxs, rewards=rewards, init_vals=init_vals)
     # grab values for each of the stimuli, omit last one since it goes to num_trials + 1
     trial_vals = model.values[:-1, :]
     vals_for_stim = trial_vals[np.arange(len(trial_vals)), stimuli_idxs]
     mse = np.sum((behavior - vals_for_stim) **2) / len(behavior)
     return mse
 
-def calc_rw_rpe_mse(alpha, stimuli_idxs, rewards, behavior):
+def calc_rw_rpe_mse(alpha, stimuli_idxs, rewards, behavior, init_vals):
     """
     Calculates the mean squared error of rw model rpe to behavioral response
     """
-    model = calc_values_for_rw_model(alpha=alpha, stimuli_idxs=stimuli_idxs, rewards=rewards)
+    model = calc_values_for_rw_model(alpha=alpha, stimuli_idxs=stimuli_idxs, rewards=rewards, init_vals=init_vals)
     # grab values for each of the stimuli, omit last one since it goes to num_trials + 1
     trial_rpes = model.rpes[:-1, :]
     rpes_for_stim = trial_rpes[np.arange(len(trial_rpes)), stimuli_idxs]
     mse = np.sum((behavior - rpes_for_stim) **2) / len(behavior)
     return mse
 
-def calc_td_rpe_mse(alpha, k, stimuli_idxs, rewards, behavior):
+def calc_td_rpe_mse(alpha, k, stimuli_idxs, rewards, behavior, init_vals):
     """
     Calculates the mean squared error of td model rpe to behavioral response
     """
-    model = calc_values_for_td_model(alpha=alpha, k=k, gamma=1, stimuli_idxs=stimuli_idxs, rewards=rewards)
+    model = calc_values_for_td_model(alpha=alpha, k=k, gamma=1, stimuli_idxs=stimuli_idxs, rewards=rewards, init_vals=init_vals)
     # grab values for each of the stimuli, omit last one since it goes to num_trials + 1
     trial_rpes = model.rpes[:-1, :, :]
     rpes_for_stim = trial_rpes[np.arange(len(trial_rpes)), :, stimuli_idxs]
     mse = np.sum((behavior - rpes_for_stim) **2) / len(behavior)
     return mse
 
-def calc_td_value_mse(alpha, k, stimuli_idxs, rewards, behavior):
+def calc_td_value_mse(alpha, k, stimuli_idxs, rewards, behavior, init_vals):
     """
     Calculates the mean squared error of td model rpe to behavioral response
     """
-    model = calc_values_for_td_model(alpha=alpha, k=k, gamma=1, stimuli_idxs=stimuli_idxs, rewards=rewards)
+    model = calc_values_for_td_model(alpha=alpha, k=k, gamma=1, stimuli_idxs=stimuli_idxs, rewards=rewards, init_vals=init_vals)
     # grab values for each of the stimuli, omit last one since it goes to num_trials + 1
     trial_vals = model.values[:-1, :, :]
     vals_for_stim = trial_vals[np.arange(len(trial_vals)), :, stimuli_idxs]
     mse = np.sum((behavior - vals_for_stim) **2) / len(behavior)
     return mse
 
-def fit_rw_model(func, stimuli_idxs, rewards, behavior, initial_guess):
+def fit_rw_model(func, stimuli_idxs, rewards, behavior, initial_guess, init_vals=None):
     """
     Fits a rw-learning model to behavioral response by adjusting
     free parameter alpha (learning rate) to minimize the mean 
@@ -63,7 +63,7 @@ def fit_rw_model(func, stimuli_idxs, rewards, behavior, initial_guess):
         OptimizeResult object with minimized fun value, alpha parameter. 
     """
     opt_res = scipy.optimize.minimize(
-        fun=lambda x: func(x, stimuli_idxs, rewards, behavior), 
+        fun=lambda x: func(x, stimuli_idxs, rewards, behavior, init_vals), 
         x0=initial_guess,
         # bounds matching description in Bishara et al
         bounds=[(0, 1)],
@@ -72,13 +72,13 @@ def fit_rw_model(func, stimuli_idxs, rewards, behavior, initial_guess):
     return opt_res
 
 
-def fit_td_model(func, stimuli_idxs, rewards, behavior, initial_guess):
+def fit_td_model(func, stimuli_idxs, rewards, behavior, initial_guess, init_vals=None):
     min_func = None
     opt_res = None
     opt_k = None
     for k in np.arange(1, 30):
         res = scipy.optimize.minimize(
-            fun=lambda x: func(x, k, stimuli_idxs, rewards, behavior), 
+            fun=lambda x: func(x, k, stimuli_idxs, rewards, behavior, init_vals), 
             x0=initial_guess,
             # bounds matching description in Bishara et al
             bounds=[(0, 1)],
